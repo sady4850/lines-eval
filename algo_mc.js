@@ -206,7 +206,7 @@ function makeMove(board) {
   for (const item of topMoves) {
     const m = moves[item.idx];
     let mcScore = 0;
-    const nSims = 5;
+    const nSims = 8;
     
     for (let s = 0; s < nSims; s++) {
       const boardCopy = deepCopy(cells);
@@ -230,7 +230,7 @@ function makeMove(board) {
       mcScore += simulateGame(boardCopy, 8);
     }
     
-    quickScores[item.idx].score += (mcScore / nSims) * 50;
+    quickScores[item.idx].score += (mcScore / nSims) * 40;
   }
 
   quickScores.sort((a, b) => b.score - a.score);
