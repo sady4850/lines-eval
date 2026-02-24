@@ -301,19 +301,17 @@ tr:hover {
     <textarea id="algoInput" spellcheck="false">function makeMove(board) {
   const { width, height, cells } = board;
 
-  // Helper to test reachability via 4-neighbor BFS
-  function reachable(from, to) {
+  function bfsReachable(from, to) {
     const [sx, sy] = from, [tx, ty] = to;
     if (sx === tx && sy === ty) return false;
     if (cells[ty][tx] !== -1) return false;
-    const q = [[sx, sy]];
-    const seen = new Set([sy * width + sx]);
+    const q = [[sx, sy]], seen = new Set([sy * width + sx]);
     const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
     while (q.length) {
       const [x, y] = q.shift();
       for (const [dx, dy] of dirs) {
         const nx = x + dx, ny = y + dy;
-        if (nx === tx && ny === ty && cells[ny][nx] === -1) return true;
+        if (nx === tx && ny === ty) return true;
         if (nx>=0 && nx<width && ny>=0 && ny<height && cells[ny][nx] === -1) {
           const k = ny * width + nx;
           if (!seen.has(k)) { seen.add(k); q.push([nx, ny]); }
@@ -323,20 +321,132 @@ tr:hover {
     return false;
   }
 
-  // Collect balls and empties
-  const balls = [], empties = [];
-  for (let y=0; y<height; y++) for (let x=0; x<width; x++) {
-    if (cells[y][x] === -1) empties.push([x,y]); else balls.push([x,y]);
+  function getBallCount(color) {
+    let count = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (cells[y][x] === color) count++;
+      }
+    }
+    return count;
   }
-  if (!balls.length || !empties.length) return null;
 
-  // Try any reachable move (fallback arbitrary)
-  for (const from of balls) {
-    for (const to of empties) {
-      if (reachable(from, to)) return { from, to };
+  function countLineInDir(x, y, dx, dy, color) {
+    let count = 1;
+    let nx = x + dx, ny = y + dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cells[ny][nx] === color) {
+      count++;
+      nx += dx; ny += dy;
+    }
+    nx = x - dx; ny = y - dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cells[ny][nx] === color) {
+      count++;
+      nx -= dx; ny -= dy;
+    }
+    return count;
+  }
+
+  function findAllMoves() {
+    const balls = [], empties = [];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (cells[y][x] === -1) empties.push([x, y]);
+        else balls.push([x, y]);
+      }
+    }
+    if (!balls.length || !empties.length) return [];
+
+    const moves = [];
+    for (const from of balls) {
+      const [fx, fy] = from;
+      const color = cells[fy][fx];
+      for (const to of empties) {
+        if (bfsReachable(from, to)) {
+          moves.push({ from, to, color });
+        }
+      }
+    }
+    return moves;
+  }
+
+  function simulateMove(cellsCopy, from, to) {
+    const [fx, fy] = from, [tx, ty] = to;
+    const color = cellsCopy[fy][fx];
+    cellsCopy[ty][tx] = color;
+    cellsCopy[fy][fx] = -1;
+
+    const toClear = new Set();
+    const dirs = [[1,0], [-1,0], [0,1], [0,-1], [1,1], [1,-1], [-1,1], [-1,-1]];
+    
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (cellsCopy[y][x] === -1) continue;
+        const c = cellsCopy[y][x];
+        for (const [dx, dy] of dirs) {
+          const len = countLineInDirSim(cellsCopy, x, y, dx, dy, c);
+          if (len >= 5) {
+            let nx = x, ny = y;
+            for (let i = 0; i < len; i++) {
+              toClear.add(ny * width + nx);
+              nx += dx; ny += dy;
+            }
+          }
+        }
+      }
+    }
+    return toClear.size;
+  }
+
+  function countLineInDirSim(cellsCopy, x, y, dx, dy, color) {
+    let count = 1;
+    let nx = x + dx, ny = y + dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cellsCopy[ny][nx] === color) {
+      count++; nx += dx; ny += dy;
+    }
+    nx = x - dx; ny = y - dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cellsCopy[ny][nx] === color) {
+      count++; nx -= dx; ny -= dy;
+    }
+    return count;
+  }
+
+  function evaluateMove(from, to, color) {
+    const tempCells = cells.map(row => [...row]);
+    const cleared = simulateMove(tempCells, from, to);
+
+    if (cleared >= 5) return 10000 + cleared * 100;
+
+    let potential = 0;
+    const dirs = [[1,0], [0,1], [1,1], [1,-1]];
+    for (const [dx, dy] of dirs) {
+      const len = countLineInDir(to[0], to[1], dx, dy, color);
+      if (len >= 3) potential += (len - 2) * 50;
+    }
+
+    const colorCount = getBallCount(color);
+    const clustering = colorCount >= 3 ? 10 : 0;
+
+    const moveDist = Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]);
+    const spaceBonus = moveDist > 3 ? 5 : 0;
+
+    return potential + clustering + spaceBonus;
+  }
+
+  const moves = findAllMoves();
+  if (!moves.length) return null;
+
+  let bestMove = null;
+  let bestScore = -Infinity;
+
+  for (const move of moves) {
+    const score = evaluateMove(move.from, move.to, move.color);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = { from: move.from, to: move.to };
     }
   }
-  return null;
+
+  return bestMove;
 }</textarea>
   </div>
 

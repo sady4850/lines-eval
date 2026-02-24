@@ -314,8 +314,9 @@ function main() {
   let width = 9;
   let height = 9;
   let colors = 7;
-  let seed = 'fixed-seed';
+  let seed = 'default';
   let showBoard = false;
+  let perMoveTimeoutMs = 200;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '-f' && args[i + 1]) {
@@ -337,6 +338,9 @@ function main() {
       seed = args[i + 1];
       if (seed === 'r') seed = 'seed-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
       i++;
+    } else if (args[i] === '-t' && args[i + 1]) {
+      perMoveTimeoutMs = parseInt(args[i + 1]);
+      i++;
     } else if (args[i] === '--board') {
       showBoard = true;
     } else if (args[i] === '--help') {
@@ -345,6 +349,7 @@ function main() {
 Options:
   -f <file>     Algorithm source file (required)
   -n <num>      Number of games (default: 50)
+  -t <ms>      Per-move timeout in ms (default: 200)
   -w <num>      Board width (default: 9)
   -h <num>      Board height (default: 9)
   -c <num>      Number of colors (default: 7)
@@ -371,7 +376,7 @@ Options:
 
   console.log(`Running ${games} games (${width}x${height}, ${colors} colors, seed: ${seed})`);
   
-  const result = evaluate(algoSource, games, width, height, colors, seed);
+  const result = evaluate(algoSource, games, width, height, colors, seed, perMoveTimeoutMs);
 
   console.log(`Avg Score: ${result.avgScore.toFixed(1)} ± ${result.stdDev.toFixed(1)}`);
   console.log(`Best/Median/Worst: ${result.best} / ${result.median} / ${result.worst}`);
