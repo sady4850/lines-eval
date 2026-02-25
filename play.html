@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lines Game - You vs Algorithm</title>
+  <style>
+    :root {
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --bg-tertiary: #0f3460;
+      --text-primary: #e8e8e8;
+      --text-secondary: #a0a0a0;
+      --accent: #00d4ff;
+      --accent-hover: #00b8e6;
+      --user-color: #2ed573;
+      --algo-color: #ff6b6b;
+      --border: #2a2a40;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: var(--accent);
+      font-size: 1.8em;
+    }
+
+    .algo-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9em;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .algo-link:hover {
+      background: var(--bg-tertiary);
+      color: var(--accent);
+    }
+
+    .game-area {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .board-container {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .board-title {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .board-title.user { color: var(--user-color); }
+    .board-title.algo { color: var(--algo-color); }
+
+    canvas {
+      border-radius: 4px;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #userCanvas { cursor: pointer; }
+    #algoCanvas { cursor: default; }
+
+    .stats {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      margin: 20px 0;
+      font-size: 1.1em;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.8em;
+    }
+
+    .stat-value {
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+
+    .stat-value.user { color: var(--user-color); }
+    .stat-value.algo { color: var(--algo-color); }
+
+    .controls {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    button {
+      background: var(--accent);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: 4px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status {
+      text-align: center;
+      margin: 15px 0;
+      font-size: 1.1em;
+      min-height: 30px;
+    }
+
+    .status.winner-user { color: var(--user-color); }
+    .status.winner-algo { color: var(--algo-color); }
+    .status.turn-user { color: var(--user-color); }
+    .status.turn-algo { color: var(--algo-color); }
+
+    .instructions {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9em;
+    }
+
+    .game-over-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .game-over-overlay.hidden {
+      display: none;
+    }
+
+    .game-over-box {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .game-over-box h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .game-over-box h2.win { color: var(--user-color); }
+    .game-over-box h2.lose { color: var(--algo-color); }
+
+    .game-over-box p {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .config-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .config-grid {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .config-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .config-item label {
+      color: var(--text-secondary);
+      font-size: 0.8em;
+      margin-bottom: 5px;
+    }
+
+    .config-item input {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 10px;
+      width: 80px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Lines Game - You vs Algorithm</h1>
+    <a href="index.html" class="algo-link">Algo Tester</a>
+  </header>
+
+  <div class="instructions">
+    Click a ball on your board to select it, then click an empty cell to move. 
+    Make more moves than the algorithm to win!
+  </div>
+
+  <div class="config-panel">
+    <div class="config-grid">
+      <div class="config-item">
+        <label>Board Width</label>
+        <input type="number" id="boardW" min="5" max="15" value="9">
+      </div>
+      <div class="config-item">
+        <label>Board Height</label>
+        <input type="number" id="boardH" min="5" max="15" value="9">
+      </div>
+      <div class="config-item">
+        <label>Colors</label>
+        <input type="number" id="colorsCount" min="3" max="8" value="5">
+      </div>
+    </div>
+  </div>
+
+  <div class="status" id="status">Press Start to begin!</div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Your Score</div>
+      <div class="stat-value user" id="userScore">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Moves</div>
+      <div class="stat-value" id="userMoves">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Algo Score</div>
+      <div class="stat-value algo" id="algoScore">0</div>
+    </div>
+  </div>
+
+  <div class="game-area">
+    <div class="board-container">
+      <div class="board-title user">You</div>
+      <canvas id="userCanvas"></canvas>
+    </div>
+    <div class="board-container">
+      <div class="board-title algo">Algorithm</div>
+      <canvas id="algoCanvas"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn">Start new</button>
+  </div>
+</div>
+
+<div class="game-over-overlay hidden" id="gameOverOverlay">
+  <div class="game-over-box">
+    <h2 id="gameOverTitle"></h2>
+    <p id="gameOverText"></p>
+    <button id="playAgainBtn">Play Again</button>
+  </div>
+</div>
+
+<script>
+const INITIAL_SPAWN_COUNT = 5;
+const SPAWN_PER_TURN = 3;
+const LINE_LENGTH = 5;
+const COLORS = [
+  '#ff4757', '#2ed573', '#1e90ff', '#ffa502', 
+  '#a55eea', '#ff6b81', '#70a1ff', '#7bed9f'
+];
+
+let userBoard = { width: 9, height: 9, cells: [] };
+let algoBoard = { width: 9, height: 9, cells: [] };
+let colorsCount = 5;
+let userMoves = 0;
+let userScore = 0;
+let algoScore = 0;
+let gameOver = false;
+let isUserTurn = true;
+let selectedBall = null;
+let makeMoveFn = null;
+let userRng = null;
+let algoRng = null;
+let currentSeed = '';
+let animating = false;
+let animationProgress = 0;
+let animationFrom = null;
+let animationTo = null;
+let animationColor = null;
+let animationBoard = null;
+let spawnAnimating = false;
+let spawnAnimationProgress = 0;
+let spawnPositions = [];
+let spawnAnimationBoard = null;
+
+const userCanvas = document.getElementById('userCanvas');
+const algoCanvas = document.getElementById('algoCanvas');
+const userCtx = userCanvas.getContext('2d');
+const algoCtx = algoCanvas.getContext('2d');
+
+function seededRandom(seedString) {
+  let h = 0;
+  for (let i = 0; i < seedString.length; i++) {
+    h = Math.imul(31, h) + seedString.charCodeAt(i) | 0;
+  }
+  let state = h;
+  return function() {
+    state = Math.imul(state ^ (state >>> 15), state | 1);
+    state ^= state + Math.imul(state ^ (state >>> 7), state | 61);
+    return ((state ^ (state >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function randomInt(rng, min, max) {
+  return Math.floor(rng() * (max - min + 1)) + min;
+}
+
+function createEmptyBoard(width, height) {
+  return Array(height).fill(null).map(() => Array(width).fill(-1));
+}
+
+function spawnBalls(rng, cells, width, height, count, addToCells = true) {
+  const empties = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (cells[y][x] === -1) empties.push([x, y]);
+    }
+  }
+  const actualCount = Math.min(count, empties.length);
+  const spawned = [];
+  for (let i = 0; i < actualCount; i++) {
+    const idx = randomInt(rng, 0, empties.length - 1);
+    const [x, y] = empties.splice(idx, 1)[0];
+    const color = randomInt(rng, 0, colorsCount - 1);
+    if (addToCells) {
+      cells[y][x] = color;
+    }
+    spawned.push([x, y, color]);
+  }
+  return spawned;
+}
+
+function bfsReachable(cells, width, height, from, to) {
+  const [sx, sy] = from;
+  const [tx, ty] = to;
+  if (sx === tx && sy === ty) return false;
+  if (cells[ty][tx] !== -1) return false;
+  const q = [[sx, sy]];
+  const seen = new Set([sy * width + sx]);
+  const dirs = [[1,0], [-1,0], [0,1], [0,-1]];
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of dirs) {
+      const nx = x + dx, ny = y + dy;
+      if (nx === tx && ny === ty) return true;
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height && cells[ny][nx] === -1) {
+        const k = ny * width + nx;
+        if (!seen.has(k)) { seen.add(k); q.push([nx, ny]); }
+      }
+    }
+  }
+  return false;
+}
+
+function findLinesToClear(cells, width, height) {
+  const toClear = new Set();
+  const dirs = [[1,0], [0,1], [1,1], [1,-1]];
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (cells[y][x] === -1) continue;
+      const color = cells[y][x];
+      for (const [dx, dy] of dirs) {
+        const line = [[x, y]];
+        let nx = x + dx, ny = y + dy;
+        while (nx >= 0 && nx < width && ny >= 0 && ny < height && cells[ny][nx] === color) {
+          line.push([nx, ny]);
+          nx += dx; ny += dy;
+        }
+        if (line.length >= LINE_LENGTH) {
+          line.forEach(([lx, ly]) => toClear.add(ly * width + lx));
+        }
+      }
+    }
+  }
+  return toClear;
+}
+
+function clearLines(cells, width, height) {
+  const toClear = findLinesToClear(cells, width, height);
+  if (toClear.size > 0) {
+    toClear.forEach(pos => {
+      const y = Math.floor(pos / width);
+      const x = pos % width;
+      cells[y][x] = -1;
+    });
+  }
+  return toClear.size;
+}
+
+function hasValidMoves(cells, width, height) {
+  const balls = [], empties = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (cells[y][x] === -1) empties.push([x, y]);
+      else balls.push([x, y]);
+    }
+  }
+  if (!balls.length || !empties.length) return false;
+  for (const from of balls) {
+    for (const to of empties) {
+      if (bfsReachable(cells, width, height, from, to)) return true;
+    }
+  }
+  return false;
+}
+
+function makeUserMove(from, to) {
+  const [fx, fy] = from;
+  const [tx, ty] = to;
+  const color = userBoard.cells[fy][fx];
+  
+  if (color === -1) return false;
+  
+  if (!bfsReachable(userBoard.cells, userBoard.width, userBoard.height, from, to)) return false;
+  
+  userBoard.cells[fy][fx] = -1;
+  
+  // Clear any existing animations before starting new one
+  animating = false;
+  spawnAnimating = false;
+  
+  animationFrom = from;
+  animationTo = to;
+  animationColor = color;
+  animationProgress = 0;
+  animating = true;
+  animationBoard = 'user';
+  
+  const startTime = performance.now();
+  const duration = 200;
+  
+  function animateUserMove() {
+  const elapsed = performance.now() - startTime;
+  animationProgress = Math.min(elapsed / duration, 1);
+  animationProgress = animationProgress < 0.5 
+    ? 2 * animationProgress * animationProgress 
+    : 1 - Math.pow(-2 * animationProgress + 2, 2) / 2;
+  
+  drawUserBoard();
+  
+  if (animationProgress < 1) {
+    requestAnimationFrame(animateUserMove);
+  } else {
+    animating = false;
+    userBoard.cells[ty][tx] = color;
+    
+    const cleared = clearLines(userBoard.cells, userBoard.width, userBoard.height);
+    if (cleared > 0) {
+      userScore += cleared;
+      document.getElementById('userScore').textContent = userScore;
+      drawUserBoard();
+    } else {
+      const spawned = spawnBalls(userRng, userBoard.cells, userBoard.width, userBoard.height, SPAWN_PER_TURN, false);
+      
+      const spawnedCleared = clearLines(userBoard.cells, userBoard.width, userBoard.height);
+      if (spawnedCleared > 0) {
+        userScore += spawnedCleared;
+        document.getElementById('userScore').textContent = userScore;
+      }
+      
+      if (spawned.length > 0) {
+        spawnAnimationBoard = 'user';
+        spawnAnimating = true;
+        spawnPositions = spawned.map(([x, y, color]) => [x, y, color]);
+        spawnAnimationProgress = 0;
+        
+        const spawnStartTime = performance.now();
+        const spawnDuration = 300;
+        
+        function animateSpawn() {
+          const elapsed = performance.now() - spawnStartTime;
+          spawnAnimationProgress = Math.min(elapsed / spawnDuration, 1);
+          spawnAnimationProgress = spawnAnimationProgress < 0.5 
+            ? 2 * spawnAnimationProgress * spawnAnimationProgress 
+            : 1 - Math.pow(-2 * spawnAnimationProgress + 2, 2) / 2;
+          
+          drawUserBoard();
+          
+          if (spawnAnimationProgress < 1) {
+            requestAnimationFrame(animateSpawn);
+          } else {
+            spawnAnimating = false;
+            spawned.forEach(([x, y, color]) => {
+              userBoard.cells[y][x] = color;
+            });
+            const clearedAfterSpawn = clearLines(userBoard.cells, userBoard.width, userBoard.height);
+            if (clearedAfterSpawn > 0) {
+              userScore += clearedAfterSpawn;
+              document.getElementById('userScore').textContent = userScore;
+            }
+            spawnPositions = [];
+            drawUserBoard();
+            
+            if (!hasValidMoves(userBoard.cells, userBoard.width, userBoard.height)) {
+              if (!hasValidMoves(algoBoard.cells, algoBoard.width, algoBoard.height)) {
+                if (userScore === algoScore) {
+                  endGame('draw', 'no-moves');
+                } else if (userScore > algoScore) {
+                  endGame('user', 'no-moves');
+                } else {
+                  endGame('algo', 'no-moves');
+                }
+              } else {
+                endGame('algo', 'no-moves');
+              }
+              return;
+            }
+          }
+        }
+        
+        requestAnimationFrame(animateSpawn);
+      } else {
+        drawUserBoard();
+      }
+    }
+  }
+}
+  
+  requestAnimationFrame(animateUserMove);
+  return true;
+}
+
+const ALGO_CODE = `function makeMove(board) {
+  const { width, height, cells } = board;
+
+  function getBallsByColor() {
+    const counts = {};
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const c = cells[y][x];
+        if (c !== -1) counts[c] = (counts[c] || 0) + 1;
+      }
+    }
+    return counts;
+  }
+
+  function countLineInDir(x, y, dx, dy, color) {
+    let count = 1;
+    let nx = x + dx, ny = y + dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === color) {
+      count++; nx += dx; ny += dy;
+    }
+    nx = x - dx; ny = y - dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === color) {
+      count++; nx -= dx; ny -= dy;
+    }
+    return count;
+  }
+
+  function findAllMoves() {
+    const balls = [], empties = [];
+    const ballSet = new Set();
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (cells[y][x] === -1) empties.push([x, y]);
+        else {
+          balls.push([x, y]);
+          ballSet.add(y * width + x);
+        }
+      }
+    }
+    if (!balls.length || !empties.length) return [];
+
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+    const moves = [];
+    
+    for (const [bx, by] of balls) {
+      const q = [[bx, by]];
+      const seen = new Set([by * width + bx]);
+      while (q.length) {
+        const [x, y] = q.shift();
+        for (const [dx, dy] of dirs) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
+          const k = ny * width + nx;
+          if (cells[ny][nx] === -1 && !seen.has(k)) {
+            seen.add(k);
+            if (nx !== bx || ny !== by) {
+              moves.push({ from: [bx, by], to: [nx, ny], color: cells[by][bx] });
+            }
+            q.push([nx, ny]);
+          }
+        }
+      }
+    }
+    return moves;
+  }
+
+  const workCells = cells.map(row => [...row]);
+
+  function simulateMove(from, to, color) {
+    const [fx, fy] = from, [tx, ty] = to;
+    workCells[ty][tx] = color;
+    workCells[fy][fx] = -1;
+
+    const toClear = [];
+    const dirs = [[1,0], [-1,0], [0,1], [0,-1], [1,1], [1,-1], [-1,1], [-1,-1]];
+    
+    for (const [dx, dy] of dirs) {
+      let len = 1;
+      let nx = tx + dx, ny = ty + dy;
+      while (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === color) {
+        len++; nx += dx; ny += dy;
+      }
+      if (len >= 5) {
+        nx = tx; ny = ty;
+        for (let i = 0; i < len; i++) {
+          toClear.push(ny * width + nx);
+          nx += dx; ny += dy;
+        }
+      }
+    }
+
+    const clearedSet = new Set(toClear);
+    for (const idx of clearedSet) {
+      const cx = idx % width, cy = Math.floor(idx / width);
+      workCells[cy][cx] = -1;
+    }
+
+    return { cleared: clearedSet.size, cells: workCells.map(row => [...row]) };
+  }
+
+  function rollback(savedCells) {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        workCells[y][x] = savedCells[y][x];
+      }
+    }
+  }
+
+  function countPotential(color) {
+    let potential = 0;
+    const dirs = [[1,0], [0,1], [1,1], [1,-1]];
+    
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (workCells[y][x] !== color) continue;
+        for (const [dx, dy] of dirs) {
+          let len = 1;
+          let nx = x + dx, ny = y + dy;
+          while (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === color) {
+            len++; nx += dx; ny += dy;
+          }
+          nx = x - dx; ny = y - dy;
+          while (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === color) {
+            len++; nx -= dx; ny -= dy;
+          }
+          if (len >= 3) potential += Math.pow(len - 1, 1.5) * 15;
+        }
+      }
+    }
+    return potential;
+  }
+
+  function evaluateMove(from, to, color, colorCount) {
+    const [fx, fy] = from;
+    const [tx, ty] = to;
+    const savedCells = workCells.map(row => [...row]);
+    const result = simulateMove(from, to, color);
+    const cleared = result.cleared;
+
+    if (cleared >= 5) {
+      rollback(savedCells);
+      return { score: 10000 + cleared * 100, cleared };
+    }
+
+    let score = 0;
+    const dirs = [[1,0], [0,1], [1,1], [1,-1]];
+    let maxLen = 0;
+    for (const [dx, dy] of dirs) {
+      const len = countLineInDir(tx, ty, dx, dy, color);
+      if (len >= 2) {
+        score += Math.pow(len - 1, 2.5) * 50;
+        if (len > maxLen) maxLen = len;
+      }
+    }
+
+    if (maxLen >= 4) score += 800;
+    if (maxLen === 3) score += 150;
+
+    for (const [dx, dy] of dirs) {
+      let len = 1;
+      let nx = tx + dx, ny = ty + dy;
+      let openEnd1 = false;
+      while (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        if (workCells[ny][nx] === -1) { openEnd1 = true; break; }
+        if (workCells[ny][nx] !== color) break;
+        len++; nx += dx; ny += dy;
+      }
+      nx = tx - dx; ny = ty - dy;
+      let openEnd2 = false;
+      while (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        if (workCells[ny][nx] === -1) { openEnd2 = true; break; }
+        if (workCells[ny][nx] !== color) break;
+        len++; nx -= dx; ny -= dy;
+      }
+      if (len >= 4) score += (len - 3) * 60;
+      if (len >= 3 && openEnd1 && openEnd2) score += 100;
+    }
+
+    const cx = width / 2, cy = height / 2;
+    const centerDistSq = (tx - cx) ** 2 + (ty - cy) ** 2;
+    score += (16 - centerDistSq) * 2;
+
+    const adjDirs = [[1,0], [-1,0], [0,1], [0,-1], [1,1], [1,-1], [-1,1], [-1,-1]];
+    let adjCount = 0;
+    for (const [dx, dy] of adjDirs) {
+      const nx = tx + dx, ny = ty + dy;
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === color) {
+        adjCount++;
+      }
+    }
+    score += adjCount * 15;
+
+    let mobility = 0;
+    for (const [dx, dy] of adjDirs) {
+      const nx = tx + dx, ny = ty + dy;
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === -1) {
+        mobility++;
+      }
+    }
+    score += mobility * 8;
+
+    score += colorCount * 10;
+
+    const boardPotential = countAllBoardPotential();
+    score += boardPotential * 1.2;
+
+    rollback(savedCells);
+    return { score, cleared: 0 };
+  }
+
+  function countAllBoardPotential() {
+    let potential = 0;
+    const dirs = [[1,0], [0,1], [1,1], [1,-1]];
+    const checked = new Set();
+    
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (workCells[y][x] === -1) continue;
+        const color = workCells[y][x];
+        for (const [dx, dy] of dirs) {
+          let len = 1;
+          let nx = x + dx, ny = y + dy;
+          while (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === color) {
+            len++; nx += dx; ny += dy;
+          }
+          nx = x - dx; ny = y - dy;
+          while (nx >= 0 && nx < width && ny >= 0 && ny < height && workCells[ny][nx] === color) {
+            len++; nx -= dx; ny -= dy;
+          }
+          if (len >= 5) potential += 500;
+          else if (len >= 4) potential += 150;
+          else if (len >= 3) potential += 50;
+        }
+      }
+    }
+    return potential;
+  }
+
+  const moves = findAllMoves();
+  if (!moves.length) return null;
+
+  const counts = getBallsByColor();
+  const colorCounts = {};
+  for (const move of moves) {
+    const c = move.color;
+    if (colorCounts[c] === undefined) {
+      colorCounts[c] = counts[c] || 0;
+    }
+  }
+
+  const empties = cells.flat().filter(c => c === -1).length;
+    const endGameBonus = empties < 15;
+    const lateGameBonus = empties < 10;
+
+    let bestMove = null;
+    let bestScore = -Infinity;
+    let bestCleared = 0;
+
+    for (const move of moves) {
+      const result = evaluateMove(move.from, move.to, move.color, colorCounts[move.color]);
+      let score = result.score;
+      if (endGameBonus && colorCounts[move.color] >= 4) score *= 1.5;
+      if (lateGameBonus) score *= 2;
+    if (score > bestScore || (score === bestScore && result.cleared > bestCleared)) {
+      bestScore = score;
+      bestCleared = result.cleared;
+      bestMove = { from: move.from, to: move.to, color: move.color };
+    }
+  }
+
+  return bestMove;
+}`;
+
+function compileAlgo(seed) {
+  try {
+    const rngWrapper = 'const rng = (() => { let h = 0; for (let i = 0; i < "' + seed + '".length; i++) { h = Math.imul(31, h) + "' + seed + '".charCodeAt(i) | 0; } let state = h; return function() { state = Math.imul(state ^ (state >>> 15), state | 1); state ^= state + Math.imul(state ^ (state >>> 7), state | 61); return ((state ^ (state >>> 14)) >>> 0) / 4294967296; }; })();';
+    let code = ALGO_CODE.replace('function makeMove(board) {', 'function makeMove(board) { ' + rngWrapper);
+    const fnBody = code + '\nreturn makeMove;';
+    return new Function(fnBody)();
+  } catch (e) {
+    console.error('Algo compile error:', e);
+    return null;
+  }
+}
+
+function makeAlgoMove() {
+  try {
+    const move = makeMoveFn({cells: algoBoard.cells, width: algoBoard.width, height: algoBoard.height});
+    
+    if (!move) {
+      endGame('user', 'no-moves');
+      return;
+    }
+    
+    const { from, to, color } = move;
+    const [fx, fy] = from;
+    const [tx, ty] = to;
+    
+    algoBoard.cells[fy][fx] = -1;
+    
+    // Clear any existing animations before starting new one
+    animating = false;
+    spawnAnimating = false;
+    
+    animationFrom = [fx, fy];
+    animationTo = [tx, ty];
+    animationColor = color;
+    animationProgress = 0;
+    animating = true;
+    animationBoard = 'algo';
+    
+    const startTime = performance.now();
+    const duration = 200;
+    
+    function animateAlgoMove() {
+  const elapsed = performance.now() - startTime;
+  animationProgress = Math.min(elapsed / duration, 1);
+  animationProgress = animationProgress < 0.5 
+    ? 2 * animationProgress * animationProgress 
+    : 1 - Math.pow(-2 * animationProgress + 2, 2) / 2;
+  
+  drawAlgoBoard();
+  
+  if (animationProgress < 1) {
+    requestAnimationFrame(animateAlgoMove);
+  } else {
+    animating = false;
+    algoBoard.cells[ty][tx] = color;
+    algoBoard.cells[fy][fx] = -1;
+    
+    const cleared = clearLines(algoBoard.cells, algoBoard.width, algoBoard.height);
+    if (cleared > 0) {
+      algoScore += cleared;
+      document.getElementById('algoScore').textContent = algoScore;
+      drawAlgoBoard();
+    } else {
+      const spawned = spawnBalls(algoRng, algoBoard.cells, algoBoard.width, algoBoard.height, SPAWN_PER_TURN, false);
+      
+      const spawnedCleared = clearLines(algoBoard.cells, algoBoard.width, algoBoard.height);
+      if (spawnedCleared > 0) {
+        algoScore += spawnedCleared;
+        document.getElementById('algoScore').textContent = algoScore;
+      }
+      
+      if (spawned.length > 0) {
+        spawnAnimationBoard = 'algo';
+        spawnAnimating = true;
+        spawnPositions = spawned.map(([x, y, color]) => [x, y, color]);
+        spawnAnimationProgress = 0;
+        
+        const spawnStartTime = performance.now();
+        const spawnDuration = 300;
+        
+        function animateSpawn() {
+          const elapsed = performance.now() - spawnStartTime;
+          spawnAnimationProgress = Math.min(elapsed / spawnDuration, 1);
+          spawnAnimationProgress = spawnAnimationProgress < 0.5 
+            ? 2 * spawnAnimationProgress * spawnAnimationProgress 
+            : 1 - Math.pow(-2 * spawnAnimationProgress + 2, 2) / 2;
+          
+          drawAlgoBoard();
+          
+          if (spawnAnimationProgress < 1) {
+            requestAnimationFrame(animateSpawn);
+          } else {
+            spawnAnimating = false;
+            spawned.forEach(([x, y, color]) => {
+              algoBoard.cells[y][x] = color;
+            });
+            const clearedAfterSpawn = clearLines(algoBoard.cells, algoBoard.width, algoBoard.height);
+            if (clearedAfterSpawn > 0) {
+              algoScore += clearedAfterSpawn;
+              document.getElementById('algoScore').textContent = algoScore;
+            }
+            spawnPositions = [];
+            drawAlgoBoard();
+            
+            if (!hasValidMoves(algoBoard.cells, algoBoard.width, algoBoard.height)) {
+              if (!hasValidMoves(userBoard.cells, userBoard.width, userBoard.height)) {
+                if (userScore === algoScore) {
+                  endGame('draw', 'no-moves');
+                } else if (userScore > algoScore) {
+                  endGame('user', 'no-moves');
+                } else {
+                  endGame('algo', 'no-moves');
+                }
+              } else {
+                endGame('user', 'no-moves');
+              }
+              return;
+            }
+          }
+        }
+        
+        requestAnimationFrame(animateSpawn);
+      } else {
+        drawAlgoBoard();
+      }
+    }
+  }
+}
+    
+    requestAnimationFrame(animateAlgoMove);
+  } catch (e) {
+    console.error('Algo move error:', e);
+  }
+}
+
+function drawBoard(ctx, board) {
+  const { width, height, cells } = board;
+  const cellSize = 40;
+  const size = Math.max(width, height) * cellSize;
+  
+  ctx.canvas.width = width * cellSize;
+  ctx.canvas.height = height * cellSize;
+  
+  ctx.fillStyle = '#0f3460';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const px = x * cellSize;
+      const py = y * cellSize;
+      
+      ctx.fillStyle = '#16213e';
+      ctx.fillRect(px + 1, py + 1, cellSize - 2, cellSize - 2);
+      
+      ctx.strokeStyle = '#2a2a40';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px, py, cellSize, cellSize);
+      
+      const color = cells[y][x];
+      if (color !== -1) {
+        ctx.fillStyle = COLORS[color % COLORS.length];
+        ctx.beginPath();
+        ctx.arc(px + cellSize/2, py + cellSize/2, cellSize * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.beginPath();
+        ctx.arc(px + cellSize/2 - cellSize * 0.1, py + cellSize/2 - cellSize * 0.1, cellSize * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+}
+
+function drawBall(ctx, x, y, color) {
+  const cellSize = 40;
+  const centerX = x * cellSize + cellSize / 2;
+  const centerY = y * cellSize + cellSize / 2;
+  const radius = cellSize / 2 - 5;
+  
+  ctx.fillStyle = COLORS[color];
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Add subtle glow effect
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = COLORS[color];
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  
+  // Add highlight
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.beginPath();
+  ctx.arc(centerX + radius * 0.2, centerY - radius * 0.2, radius * 0.3, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawBallWithScale(ctx, x, y, color, scale) {
+  const cellSize = 40;
+  const centerX = x * cellSize + cellSize / 2;
+  const centerY = y * cellSize + cellSize / 2;
+  const radius = (cellSize / 2 - 5) * scale;
+  
+  ctx.fillStyle = COLORS[color];
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Add subtle glow effect
+  if (scale > 0.5) {
+    ctx.shadowBlur = 10 * scale;
+    ctx.shadowColor = COLORS[color];
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  
+  // Add highlight
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.beginPath();
+  ctx.arc(centerX + radius * 0.2, centerY - radius * 0.2, radius * 0.3, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawUserBoard() {
+  drawBoard(userCtx, userBoard);
+  
+  if (selectedBall) {
+    const cellSize = 40;
+    const [sx, sy] = selectedBall;
+    userCtx.strokeStyle = '#fff';
+    userCtx.lineWidth = 3;
+    userCtx.strokeRect(sx * cellSize + 2, sy * cellSize + 2, cellSize - 4, cellSize - 4);
+  }
+  
+  if (animating && animationBoard === 'user') {
+    const t = animationProgress;
+    const fromX = animationFrom[0] + (animationTo[0] - animationFrom[0]) * t;
+    const fromY = animationFrom[1] + (animationTo[1] - animationFrom[1]) * t;
+    drawBall(userCtx, fromX, fromY, animationColor);
+  }
+  
+  if (spawnAnimating && spawnAnimationBoard === 'user') {
+    for (const [x, y, color] of spawnPositions) {
+      drawBallWithScale(userCtx, x, y, color, spawnAnimationProgress);
+    }
+  }
+}
+
+function drawAlgoBoard() {
+  drawBoard(algoCtx, algoBoard);
+  
+  if (animating && animationBoard === 'algo') {
+    const t = animationProgress;
+    const fromX = animationFrom[0] + (animationTo[0] - animationFrom[0]) * t;
+    const fromY = animationFrom[1] + (animationTo[1] - animationFrom[1]) * t;
+    drawBall(algoCtx, fromX, fromY, animationColor);
+  }
+  
+  if (spawnAnimating && spawnAnimationBoard === 'algo') {
+    for (const [x, y, color] of spawnPositions) {
+      drawBallWithScale(algoCtx, x, y, color, spawnAnimationProgress);
+    }
+  }
+}
+
+function getCellFromEvent(canvas, e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = Math.floor((e.clientX - rect.left) * scaleX / 40);
+  const y = Math.floor((e.clientY - rect.top) * scaleY / 40);
+  return [x, y];
+}
+
+userCanvas.addEventListener('click', (e) => {
+  if (gameOver || !isUserTurn || animating) return;
+  
+  const [x, y] = getCellFromEvent(userCanvas, e);
+  if (x < 0 || x >= userBoard.width || y < 0 || y >= userBoard.height) return;
+  
+  const cell = userBoard.cells[y][x];
+  
+  if (selectedBall) {
+    if (cell === -1) {
+      if (makeUserMove(selectedBall, [x, y])) {
+        selectedBall = null;
+        isUserTurn = false;
+        updateStatus();
+        
+        const algoCanMove = hasValidMoves(algoBoard.cells, algoBoard.width, algoBoard.height);
+        const userCanMove = hasValidMoves(userBoard.cells, userBoard.width, userBoard.height);
+        
+        if (!algoCanMove && !userCanMove) {
+          if (userScore === algoScore) {
+            endGame('draw', 'no-moves');
+          } else if (userScore > algoScore) {
+            endGame('user', 'no-moves');
+          } else {
+            endGame('algo', 'no-moves');
+          }
+          return;
+        }
+        
+        if (!algoCanMove) {
+          endGame('user', 'no-moves');
+          return;
+        }
+        
+        setTimeout(() => {
+          if (!gameOver) {
+            makeAlgoMove();
+            
+            const userCanMoveAfter = hasValidMoves(userBoard.cells, userBoard.width, userBoard.height);
+            const algoCanMoveAfter = hasValidMoves(algoBoard.cells, algoBoard.width, algoBoard.height);
+            
+            if (!userCanMoveAfter && !algoCanMoveAfter) {
+              if (userScore === algoScore) {
+                endGame('draw', 'no-moves');
+              } else if (userScore > algoScore) {
+                endGame('user', 'no-moves');
+              } else {
+                endGame('algo', 'no-moves');
+              }
+              return;
+            }
+            
+            if (!userCanMoveAfter) {
+              endGame('algo', 'no-moves');
+              return;
+            }
+            
+            userMoves++;
+            document.getElementById('userMoves').textContent = userMoves;
+            
+            isUserTurn = true;
+            updateStatus();
+          }
+        }, 300);
+      }
+    } else {
+      selectedBall = [x, y];
+      drawUserBoard();
+    }
+  } else {
+    if (cell !== -1) {
+      selectedBall = [x, y];
+      drawUserBoard();
+    }
+  }
+});
+
+function updateStatus() {
+  const status = document.getElementById('status');
+  if (gameOver) return;
+  status.className = 'status ' + (isUserTurn ? 'turn-user' : 'turn-algo');
+  status.textContent = isUserTurn ? 'Your turn - click a ball to move' : 'Algorithm is thinking...';
+}
+
+function endGame(winner, reason) {
+  gameOver = true;
+  const overlay = document.getElementById('gameOverOverlay');
+  const title = document.getElementById('gameOverTitle');
+  const text = document.getElementById('gameOverText');
+  
+  overlay.classList.remove('hidden');
+  
+  if (winner === 'draw') {
+    title.textContent = "It's a Draw!";
+    title.className = '';
+    title.style.color = '#ffd700';
+    text.textContent = `You: ${userMoves} moves, ${userScore} pts | Algo: ${algoScore} pts. Neither player can move!`;
+  } else if (winner === 'user') {
+    title.textContent = 'You Win!';
+    title.className = 'win';
+    if (reason === 'no-moves') {
+      text.textContent = `You: ${userMoves} moves, ${userScore} pts | Algo: ${algoScore} pts. Algo had no valid moves!`;
+    } else {
+      text.textContent = `You: ${userMoves} moves, ${userScore} pts | Algo: ${algoScore} pts. You outlasted the algorithm!`;
+    }
+  } else {
+    title.textContent = 'Algorithm Wins';
+    title.className = 'lose';
+    if (reason === 'no-moves') {
+      text.textContent = `You: ${userMoves} moves, ${userScore} pts | Algo: ${algoScore} pts. You had no valid moves!`;
+    } else {
+      text.textContent = `You: ${userMoves} moves, ${userScore} pts | Algo: ${algoScore} pts. The algorithm outlasted you!`;
+    }
+  }
+}
+
+function initGame() {
+  const w = parseInt(document.getElementById('boardW').value);
+  const h = parseInt(document.getElementById('boardH').value);
+  colorsCount = parseInt(document.getElementById('colorsCount').value);
+  currentSeed = 'game-' + Date.now();
+  
+  userBoard = { width: w, height: h, cells: createEmptyBoard(w, h) };
+  algoBoard = { width: w, height: h, cells: createEmptyBoard(w, h) };
+  
+  userRng = seededRandom(currentSeed + '-user');
+  algoRng = seededRandom(currentSeed + '-algo');
+  
+  spawnBalls(userRng, userBoard.cells, w, h, INITIAL_SPAWN_COUNT);
+  spawnBalls(algoRng, algoBoard.cells, w, h, INITIAL_SPAWN_COUNT);
+  
+  userMoves = 0;
+  userScore = 0;
+  algoScore = 0;
+  gameOver = false;
+  isUserTurn = true;
+  selectedBall = null;
+  
+  document.getElementById('userMoves').textContent = '0';
+  document.getElementById('userScore').textContent = '0';
+  document.getElementById('algoScore').textContent = '0';
+  document.getElementById('gameOverOverlay').classList.add('hidden');
+  
+  makeMoveFn = compileAlgo(currentSeed);
+  
+  drawUserBoard();
+  drawBoard(algoCtx, algoBoard);
+  updateStatus();
+}
+
+document.getElementById('startBtn').addEventListener('click', initGame);
+document.getElementById('playAgainBtn').addEventListener('click', initGame);
+
+initGame();
+</script>
+
+</body>
+</html>
