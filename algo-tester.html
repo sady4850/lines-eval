@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lines Game Algorithm Tester</title>
+<style>
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f3460;
+  --text-primary: #e8e8e8;
+  --text-secondary: #a0a0a0;
+  --accent: #00d4ff;
+  --accent-hover: #00b8e6;
+  --error: #ff4757;
+  --success: #2ed573;
+  --border: #2a2a40;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 20px;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: var(--accent);
+  font-size: 2em;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 30px;
+  font-size: 0.9em;
+}
+
+.section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  color: var(--accent);
+  margin-bottom: 15px;
+  font-size: 1.2em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 300px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  color: var(--text-secondary);
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+input[type="number"],
+input[type="text"] {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+button {
+  background: var(--accent);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+progress {
+  width: 100%;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+progress::-webkit-progress-bar {
+  background: var(--bg-primary);
+}
+
+progress::-webkit-progress-value {
+  background: var(--accent);
+  transition: width 0.3s;
+}
+
+progress::-moz-progress-bar {
+  background: var(--accent);
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.stat-card {
+  background: var(--bg-tertiary);
+  padding: 15px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 0.8em;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  color: var(--accent);
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background: var(--bg-tertiary);
+  color: var(--accent);
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+}
+
+tr:hover {
+  background: var(--bg-primary);
+}
+
+.code-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  color: var(--text-secondary);
+}
+
+.expandable-code {
+  background: var(--bg-primary);
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 10px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 0.8em;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.view-btn {
+  padding: 4px 12px;
+  font-size: 0.85em;
+}
+
+.error-banner {
+  background: var(--error);
+  color: white;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  display: none;
+}
+
+.error-banner.show {
+  display: block;
+}
+
+.mini-board {
+  display: inline-block;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.hidden {
+  display: none;
+}
+
+.rank-badge {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.rank-1 { background: gold; color: black; }
+.rank-2 { background: silver; color: black; }
+.rank-3 { background: #cd7f32; color: white; }
+
+#miniBoard {
+  border-radius: 4px;
+  max-width: 100%;
+  display: block;
+  image-rendering: crisp-edges;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Lines Game Algorithm Tester</h1>
+  <div class="subtitle">Evaluate move algorithms for the classic Lines game (no next-move preview)</div>
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <div class="section">
+    <div class="section-title">Algorithm Code</div>
+    <textarea id="algoInput" spellcheck="false">function makeMove(board) {
+  const { width, height, cells } = board;
+
+  function bfsReachable(from, to) {
+    const [sx, sy] = from, [tx, ty] = to;
+    if (sx === tx && sy === ty) return false;
+    if (cells[ty][tx] !== -1) return false;
+    const q = [[sx, sy]], seen = new Set([sy * width + sx]);
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of dirs) {
+        const nx = x + dx, ny = y + dy;
+        if (nx === tx && ny === ty) return true;
+        if (nx>=0 && nx<width && ny>=0 && ny<height && cells[ny][nx] === -1) {
+          const k = ny * width + nx;
+          if (!seen.has(k)) { seen.add(k); q.push([nx, ny]); }
+        }
+      }
+    }
+    return false;
+  }
+
+  function getBallCount(color) {
+    let count = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (cells[y][x] === color) count++;
+      }
+    }
+    return count;
+  }
+
+  function countLineInDir(x, y, dx, dy, color) {
+    let count = 1;
+    let nx = x + dx, ny = y + dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cells[ny][nx] === color) {
+      count++;
+      nx += dx; ny += dy;
+    }
+    nx = x - dx; ny = y - dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cells[ny][nx] === color) {
+      count++;
+      nx -= dx; ny -= dy;
+    }
+    return count;
+  }
+
+  function findAllMoves() {
+    const balls = [], empties = [];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (cells[y][x] === -1) empties.push([x, y]);
+        else balls.push([x, y]);
+      }
+    }
+    if (!balls.length || !empties.length) return [];
+
+    const moves = [];
+    for (const from of balls) {
+      const [fx, fy] = from;
+      const color = cells[fy][fx];
+      for (const to of empties) {
+        if (bfsReachable(from, to)) {
+          moves.push({ from, to, color });
+        }
+      }
+    }
+    return moves;
+  }
+
+  function simulateMove(cellsCopy, from, to) {
+    const [fx, fy] = from, [tx, ty] = to;
+    const color = cellsCopy[fy][fx];
+    cellsCopy[ty][tx] = color;
+    cellsCopy[fy][fx] = -1;
+
+    const toClear = new Set();
+    const dirs = [[1,0], [-1,0], [0,1], [0,-1], [1,1], [1,-1], [-1,1], [-1,-1]];
+    
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (cellsCopy[y][x] === -1) continue;
+        const c = cellsCopy[y][x];
+        for (const [dx, dy] of dirs) {
+          const len = countLineInDirSim(cellsCopy, x, y, dx, dy, c);
+          if (len >= 5) {
+            let nx = x, ny = y;
+            for (let i = 0; i < len; i++) {
+              toClear.add(ny * width + nx);
+              nx += dx; ny += dy;
+            }
+          }
+        }
+      }
+    }
+    return toClear.size;
+  }
+
+  function countLineInDirSim(cellsCopy, x, y, dx, dy, color) {
+    let count = 1;
+    let nx = x + dx, ny = y + dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cellsCopy[ny][nx] === color) {
+      count++; nx += dx; ny += dy;
+    }
+    nx = x - dx; ny = y - dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cellsCopy[ny][nx] === color) {
+      count++; nx -= dx; ny -= dy;
+    }
+    return count;
+  }
+
+  function evaluateMove(from, to, color) {
+    const tempCells = cells.map(row => [...row]);
+    const cleared = simulateMove(tempCells, from, to);
+
+    if (cleared >= 5) return 10000 + cleared * 100;
+
+    let potential = 0;
+    const dirs = [[1,0], [0,1], [1,1], [1,-1]];
+    for (const [dx, dy] of dirs) {
+      const len = countLineInDir(to[0], to[1], dx, dy, color);
+      if (len >= 3) potential += (len - 2) * 50;
+    }
+
+    const colorCount = getBallCount(color);
+    const clustering = colorCount >= 3 ? 10 : 0;
+
+    const moveDist = Math.abs(from[0] - to[0]) + Math.abs(from[1] - to[1]);
+    const spaceBonus = moveDist > 3 ? 5 : 0;
+
+    return potential + clustering + spaceBonus;
+  }
+
+  const moves = findAllMoves();
+  if (!moves.length) return null;
+
+  let bestMove = null;
+  let bestScore = -Infinity;
+
+  for (const move of moves) {
+    const score = evaluateMove(move.from, move.to, move.color);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = { from: move.from, to: move.to };
+    }
+  }
+
+  return bestMove;
+}</textarea>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration</div>
+    <div class="config-grid">
+      <div class="config-item">
+        <label for="gamesCount">Number of Games</label>
+        <input type="number" id="gamesCount" min="1" max="1000" value="50">
+      </div>
+      <div class="config-item">
+        <label for="boardW">Board Width</label>
+        <input type="number" id="boardW" min="3" max="20" value="9">
+      </div>
+      <div class="config-item">
+        <label for="boardH">Board Height</label>
+        <input type="number" id="boardH" min="3" max="20" value="9">
+      </div>
+      <div class="config-item">
+        <label for="colorsCount">Number of Colors</label>
+        <input type="number" id="colorsCount" min="2" max="10" value="7">
+      </div>
+      <div class="config-item">
+        <label for="seed">Random Seed</label>
+        <input type="text" id="seed" value="fixed-seed">
+      </div>
+    </div>
+    <div class="button-group">
+      <button id="startBtn">Start Evaluation</button>
+      <button id="runOneBtn">Run 1 Game (Demo)</button>
+    </div>
+  </div>
+
+  <div class="section" id="progressSection" style="display:none;">
+    <div class="section-title">Progress</div>
+    <progress id="progress" max="100" value="0"></progress>
+    <div class="progress-text" id="progressText">Ready to start...</div>
+    <div class="stats-grid" id="statsGrid" style="display:none;">
+      <div class="stat-card">
+        <div class="stat-label">Current Game</div>
+        <div class="stat-value" id="currentGame">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Score</div>
+        <div class="stat-value" id="avgScore">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Best</div>
+        <div class="stat-value" id="bestScore">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Median</div>
+        <div class="stat-value" id="medianScore">-</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Leaderboard</div>
+    <button id="clearLeaderboard" style="float:right;margin-top:-45px;">Clear Leaderboard</button>
+    <div id="leaderboardContainer"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Last Game Visualization</div>
+    <canvas id="miniBoard" width="450" height="450"></canvas>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+const INITIAL_SPAWN_COUNT = 5;
+const SPAWN_PER_TURN = 3;
+const LINE_LENGTH = 5;
+const MAX_TURNS_PER_GAME = 10000;
+const PER_MOVE_TIMEOUT_MS = 20;
+const LEADERBOARD_KEY = 'linesTester.leaderboard.v1';
+const MAX_LEADERBOARD_SIZE = 20;
+
+// ============================================================================
+// SEEDED PRNG (Mulberry32)
+// ============================================================================
+function seededRandom(seedString) {
+  let h = 0;
+  for (let i = 0; i < seedString.length; i++) {
+    h = Math.imul(31, h) + seedString.charCodeAt(i) | 0;
+  }
+  let state = h;
+  return function() {
+    state = Math.imul(state ^ (state >>> 15), state | 1);
+    state ^= state + Math.imul(state ^ (state >>> 7), state | 61);
+    return ((state ^ (state >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function randomInt(rng, min, max) {
+  return Math.floor(rng() * (max - min + 1)) + min;
+}
+
+// ============================================================================
+// HASH FUNCTION (simple 32-bit)
+// ============================================================================
+function hashSource(src) {
+  let h = 0;
+  for (let i = 0; i < src.length; i++) {
+    h = Math.imul(31, h) + src.charCodeAt(i) | 0;
+  }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+// ============================================================================
+// BFS REACHABILITY
+// ============================================================================
+function bfsReachableEmpty(cells, width, height, from, to) {
+  const [sx, sy] = from;
+  const [tx, ty] = to;
+
+  if (sx === tx && sy === ty) return false;
+  if (tx < 0 || tx >= width || ty < 0 || ty >= height) return false;
+  if (cells[ty][tx] !== -1) return false;
+  if (cells[sy][sx] === -1) return false;
+
+  const q = [[sx, sy]];
+  const seen = new Set([sy * width + sx]);
+  const dirs = [[1,0], [-1,0], [0,1], [0,-1]];
+
+  while (q.length > 0) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of dirs) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx === tx && ny === ty) return true;
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height && cells[ny][nx] === -1) {
+        const k = ny * width + nx;
+        if (!seen.has(k)) {
+          seen.add(k);
+          q.push([nx, ny]);
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// ============================================================================
+// LINE DETECTION
+// ============================================================================
+function findLinesToClear(cells, width, height, lineLength) {
+  const toClear = new Set();
+
+  // Helper to check a line starting at (x,y) in direction (dx,dy)
+  function checkLine(x, y, dx, dy) {
+    const color = cells[y][x];
+    if (color === -1) return;
+
+    const line = [[x, y]];
+    let nx = x + dx, ny = y + dy;
+    while (nx >= 0 && nx < width && ny >= 0 && ny < height && cells[ny][nx] === color) {
+      line.push([nx, ny]);
+      nx += dx;
+      ny += dy;
+    }
+
+    if (line.length >= lineLength) {
+      for (const [lx, ly] of line) {
+        toClear.add(ly * width + lx);
+      }
+    }
+  }
+
+  // Horizontal
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (cells[y][x] !== -1 && (x === 0 || cells[y][x-1] !== cells[y][x])) {
+        checkLine(x, y, 1, 0);
+      }
+    }
+  }
+
+  // Vertical
+  for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) {
+      if (cells[y][x] !== -1 && (y === 0 || cells[y-1][x] !== cells[y][x])) {
+        checkLine(x, y, 0, 1);
+      }
+    }
+  }
+
+  // Main diagonal (\)
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (cells[y][x] !== -1 && (x === 0 || y === 0 || cells[y-1][x-1] !== cells[y][x])) {
+        checkLine(x, y, 1, 1);
+      }
+    }
+  }
+
+  // Anti-diagonal (/)
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (cells[y][x] !== -1 && (x === width-1 || y === 0 || cells[y-1][x+1] !== cells[y][x])) {
+        checkLine(x, y, -1, 1);
+      }
+    }
+  }
+
+  return toClear;
+}
+
+// ============================================================================
+// SPAWN BALLS
+// ============================================================================
+function spawnBalls(rng, cells, width, height, colorsCount, count) {
+  const empties = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (cells[y][x] === -1) empties.push([x, y]);
+    }
+  }
+
+  const spawned = [];
+  const actualCount = Math.min(count, empties.length);
+
+  for (let i = 0; i < actualCount; i++) {
+    const idx = randomInt(rng, 0, empties.length - 1);
+    const [x, y] = empties.splice(idx, 1)[0];
+    const color = randomInt(rng, 0, colorsCount - 1);
+    cells[y][x] = color;
+    spawned.push([x, y]);
+  }
+
+  return spawned;
+}
+
+// ============================================================================
+// DEEP COPY BOARD
+// ============================================================================
+function deepCopyBoard(board) {
+  return {
+    width: board.width,
+    height: board.height,
+    colorsCount: board.colorsCount,
+    cells: board.cells.map(row => [...row])
+  };
+}
+
+// ============================================================================
+// SAFE CALL MAKEMOVE
+// ============================================================================
+function safeCallMakeMove(fn, board, timeLimitMs) {
+  const startTime = Date.now();
+  try {
+    const result = fn(deepCopyBoard(board));
+    const elapsed = Date.now() - startTime;
+    if (elapsed > timeLimitMs) {
+      return { success: false, error: 'timeout' };
+    }
+    return { success: true, result };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ============================================================================
+// GAME ENGINE
+// ============================================================================
+function runGame(makeMoveFn, width, height, colorsCount, rng) {
+  const cells = Array(height).fill(null).map(() => Array(width).fill(-1));
+  const board = { width, height, colorsCount, cells };
+
+  let score = 0;
+  let turns = 0;
+  let movesAccepted = 0;
+  let movesInvalidOrTimeout = 0;
+
+  // Initial spawn
+  spawnBalls(rng, cells, width, height, colorsCount, INITIAL_SPAWN_COUNT);
+
+  // Main game loop
+  while (turns < MAX_TURNS_PER_GAME) {
+    turns++;
+
+    // Check if board is full
+    const hasEmpty = cells.some(row => row.includes(-1));
+    if (!hasEmpty) break;
+
+    // Call user algorithm
+    const callResult = safeCallMakeMove(makeMoveFn, board, PER_MOVE_TIMEOUT_MS);
+    let moveMade = false;
+
+    if (callResult.success && callResult.result) {
+      const move = callResult.result;
+
+      // Validate move
+      if (move.from && move.to &&
+          Array.isArray(move.from) && Array.isArray(move.to) &&
+          move.from.length === 2 && move.to.length === 2) {
+
+        const [fx, fy] = move.from;
+        const [tx, ty] = move.to;
+
+        if (fx >= 0 && fx < width && fy >= 0 && fy < height &&
+            tx >= 0 && tx < width && ty >= 0 && ty < height &&
+            cells[fy][fx] !== -1 && cells[ty][tx] === -1 &&
+            bfsReachableEmpty(cells, width, height, [fx, fy], [tx, ty])) {
+
+          // Valid move
+          cells[ty][tx] = cells[fy][fx];
+          cells[fy][fx] = -1;
+          moveMade = true;
+          movesAccepted++;
+        } else {
+          movesInvalidOrTimeout++;
+        }
+      } else {
+        movesInvalidOrTimeout++;
+      }
+    } else {
+      movesInvalidOrTimeout++;
+    }
+
+    // Check for lines after move
+    let linesCleared = findLinesToClear(cells, width, height, LINE_LENGTH);
+
+    if (linesCleared.size > 0) {
+      // Clear lines
+      for (const pos of linesCleared) {
+        const y = Math.floor(pos / width);
+        const x = pos % width;
+        cells[y][x] = -1;
+      }
+      score += linesCleared.size;
+    } else if (moveMade || !callResult.success || !callResult.result) {
+      // No lines cleared, spawn new balls
+      spawnBalls(rng, cells, width, height, colorsCount, SPAWN_PER_TURN);
+
+      // Check for lines after spawn
+      linesCleared = findLinesToClear(cells, width, height, LINE_LENGTH);
+      if (linesCleared.size > 0) {
+        for (const pos of linesCleared) {
+          const y = Math.floor(pos / width);
+          const x = pos % width;
+          cells[y][x] = -1;
+        }
+        score += linesCleared.size;
+      }
+    }
+  }
+
+  return {
+    score,
+    turns,
+    movesAccepted,
+    movesInvalidOrTimeout,
+    finalBoard: cells
+  };
+}
+
+// ============================================================================
+// EVALUATION
+// ============================================================================
+async function evaluateAlgorithm(algoSource, gamesCount, width, height, colorsCount, baseSeed) {
+  // Compile algorithm
+  let makeMoveFn;
+  try {
+    const fnBody = algoSource + '\nreturn makeMove;';
+    makeMoveFn = new Function(fnBody)();
+    if (typeof makeMoveFn !== 'function') {
+      throw new Error('makeMove is not a function');
+    }
+  } catch (e) {
+    throw new Error('Failed to compile algorithm: ' + e.message);
+  }
+
+  const results = [];
+  let totalMovesAccepted = 0;
+  let totalMovesInvalid = 0;
+  let lastBoard = null;
+
+  for (let i = 0; i < gamesCount; i++) {
+    const gameSeed = baseSeed + '-' + i;
+    const rng = seededRandom(gameSeed);
+
+    const result = runGame(makeMoveFn, width, height, colorsCount, rng);
+    results.push(result.score);
+    totalMovesAccepted += result.movesAccepted;
+    totalMovesInvalid += result.movesInvalidOrTimeout;
+
+    if (i === gamesCount - 1) {
+      lastBoard = result.finalBoard;
+    }
+
+    // Yield to UI
+    if (i % 5 === 0) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      updateProgress(i + 1, gamesCount, results);
+    }
+  }
+
+  // Final update
+  updateProgress(gamesCount, gamesCount, results);
+
+  // Compute statistics
+  results.sort((a, b) => a - b);
+  const avgScore = results.reduce((a, b) => a + b, 0) / results.length;
+  const median = results[Math.floor(results.length / 2)];
+  const best = results[results.length - 1];
+  const worst = results[0];
+
+  const variance = results.reduce((sum, val) => sum + Math.pow(val - avgScore, 2), 0) / results.length;
+  const stdDev = Math.sqrt(variance);
+
+  return {
+    avgScore,
+    stdDev,
+    best,
+    median,
+    worst,
+    games: gamesCount,
+    width,
+    height,
+    colorsCount,
+    movesAccepted: totalMovesAccepted,
+    movesInvalidOrTimeout: totalMovesInvalid,
+    seedUsed: baseSeed,
+    algoHash: hashSource(algoSource),
+    algoSource: algoSource,
+    timestampIso: new Date().toISOString(),
+    lastBoard
+  };
+}
+
+// ============================================================================
+// UI UPDATES
+// ============================================================================
+function showError(message) {
+  const banner = document.getElementById('errorBanner');
+  banner.textContent = message;
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 5000);
+}
+
+function updateProgress(current, total, scores) {
+  const progress = document.getElementById('progress');
+  const progressText = document.getElementById('progressText');
+  const statsGrid = document.getElementById('statsGrid');
+
+  progress.value = (current / total) * 100;
+  progressText.textContent = `Game ${current}/${total}`;
+
+  if (scores.length > 0) {
+    statsGrid.style.display = 'grid';
+    const sorted = [...scores].sort((a, b) => a - b);
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    const median = sorted[Math.floor(sorted.length / 2)];
+    const best = sorted[sorted.length - 1];
+
+    document.getElementById('currentGame').textContent = current;
+    document.getElementById('avgScore').textContent = avg.toFixed(1);
+    document.getElementById('bestScore').textContent = best;
+    document.getElementById('medianScore').textContent = median;
+  }
+}
+
+// ============================================================================
+// LEADERBOARD
+// ============================================================================
+function loadLeaderboard() {
+  const stored = localStorage.getItem(LEADERBOARD_KEY);
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveLeaderboard(entries) {
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
+}
+
+function addToLeaderboard(result) {
+  const entries = loadLeaderboard();
+  entries.push(result);
+
+  // Sort by avgScore desc, then by movesInvalidOrTimeout asc, then by timestamp asc
+  entries.sort((a, b) => {
+    if (b.avgScore !== a.avgScore) return b.avgScore - a.avgScore;
+    if (a.movesInvalidOrTimeout !== b.movesInvalidOrTimeout) {
+      return a.movesInvalidOrTimeout - b.movesInvalidOrTimeout;
+    }
+    return new Date(a.timestampIso) - new Date(b.timestampIso);
+  });
+
+  // Keep top 20
+  const trimmed = entries.slice(0, MAX_LEADERBOARD_SIZE);
+  saveLeaderboard(trimmed);
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const container = document.getElementById('leaderboardContainer');
+  const entries = loadLeaderboard();
+
+  if (entries.length === 0) {
+    container.innerHTML = '<div class="empty-state">No results yet. Run an evaluation to see entries here.</div>';
+    return;
+  }
+
+  let html = '<table><thead><tr>';
+  html += '<th>Rank</th>';
+  html += '<th>Avg Score</th>';
+  html += '<th>Best/Median/Worst</th>';
+  html += '<th>Games</th>';
+  html += '<th>Board</th>';
+  html += '<th>Colors</th>';
+  html += '<th>Moves OK/Bad</th>';
+  html += '<th>Date</th>';
+  html += '<th>Hash</th>';
+  html += '<th>Action</th>';
+  html += '</tr></thead><tbody>';
+
+  entries.forEach((entry, idx) => {
+    const rank = idx + 1;
+    const rankClass = rank <= 3 ? `rank-${rank}` : '';
+    const date = new Date(entry.timestampIso).toLocaleString();
+
+    html += '<tr>';
+    html += `<td><span class="rank-badge ${rankClass}">${rank}</span></td>`;
+    html += `<td><strong>${entry.avgScore.toFixed(1)}</strong> ± ${entry.stdDev.toFixed(1)}</td>`;
+    html += `<td>${entry.best} / ${entry.median} / ${entry.worst}</td>`;
+    html += `<td>${entry.games}</td>`;
+    html += `<td>${entry.width}×${entry.height}</td>`;
+    html += `<td>${entry.colorsCount}</td>`;
+    html += `<td>${entry.movesAccepted} / ${entry.movesInvalidOrTimeout}</td>`;
+    html += `<td style="font-size:0.8em;">${date}</td>`;
+    html += `<td class="code-cell">${entry.algoHash}</td>`;
+    html += `<td><button class="view-btn" onclick="toggleCode(${idx})">View</button></td>`;
+    html += '</tr>';
+    html += `<tr id="code-row-${idx}" class="hidden"><td colspan="10">`;
+    html += `<div class="expandable-code">${escapeHtml(entry.algoSource)}</div>`;
+    html += '</td></tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+window.toggleCode = function(idx) {
+  const row = document.getElementById(`code-row-${idx}`);
+  row.classList.toggle('hidden');
+};
+
+// ============================================================================
+// BOARD VISUALIZATION
+// ============================================================================
+function drawBoard(cells, width, height, colorsCount) {
+  const canvas = document.getElementById('miniBoard');
+  if (!canvas) {
+    console.error('Canvas element not found');
+    return;
+  }
+
+  const ctx = canvas.getContext('2d');
+
+  // Calculate cell size to fit within max 450px
+  const maxSize = 450;
+  const cellSize = Math.floor(maxSize / Math.max(width, height));
+
+  // Set canvas dimensions
+  canvas.width = width * cellSize;
+  canvas.height = height * cellSize;
+
+  // Clear and fill background
+  ctx.fillStyle = '#0f3460';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Generate colors
+  const colors = [];
+  for (let i = 0; i < colorsCount; i++) {
+    const hue = (i * 360 / colorsCount) % 360;
+    colors.push(`hsl(${hue}, 70%, 60%)`);
+  }
+
+  // Draw cells
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const color = cells[y][x];
+
+      // Draw cell background
+      ctx.fillStyle = '#16213e';
+      ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+
+      // Grid lines
+      ctx.strokeStyle = '#2a2a40';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+
+      // Ball
+      if (color !== -1 && color < colorsCount) {
+        ctx.fillStyle = colors[color];
+        ctx.beginPath();
+        ctx.arc(
+          x * cellSize + cellSize / 2,
+          y * cellSize + cellSize / 2,
+          cellSize * 0.35,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+
+        // Add highlight for better visibility
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.beginPath();
+        ctx.arc(
+          x * cellSize + cellSize / 2 - cellSize * 0.1,
+          y * cellSize + cellSize / 2 - cellSize * 0.1,
+          cellSize * 0.12,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+      }
+    }
+  }
+}
+
+// ============================================================================
+// EVENT HANDLERS
+// ============================================================================
+document.getElementById('startBtn').addEventListener('click', async () => {
+  const algoInput = document.getElementById('algoInput').value.trim();
+  const gamesCount = parseInt(document.getElementById('gamesCount').value);
+  const boardW = parseInt(document.getElementById('boardW').value);
+  const boardH = parseInt(document.getElementById('boardH').value);
+  const colorsCount = parseInt(document.getElementById('colorsCount').value);
+  let seed = document.getElementById('seed').value.trim();
+
+  if (!seed) {
+    seed = 'seed-' + Date.now();
+    document.getElementById('seed').value = seed;
+  }
+
+  if (!algoInput) {
+    showError('Please provide algorithm code');
+    return;
+  }
+
+  // Disable UI
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('runOneBtn').disabled = true;
+  document.getElementById('algoInput').disabled = true;
+  document.getElementById('progressSection').style.display = 'block';
+  document.getElementById('statsGrid').style.display = 'none';
+
+  try {
+    const result = await evaluateAlgorithm(algoInput, gamesCount, boardW, boardH, colorsCount, seed);
+    addToLeaderboard(result);
+
+    if (result.lastBoard) {
+      drawBoard(result.lastBoard, boardW, boardH, colorsCount);
+    }
+
+    document.getElementById('progressText').textContent =
+      `Completed! Avg Score: ${result.avgScore.toFixed(1)} ± ${result.stdDev.toFixed(1)}`;
+  } catch (e) {
+    showError(e.message);
+    document.getElementById('progressSection').style.display = 'none';
+  } finally {
+    // Re-enable UI
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('runOneBtn').disabled = false;
+    document.getElementById('algoInput').disabled = false;
+  }
+});
+
+document.getElementById('runOneBtn').addEventListener('click', async () => {
+  const algoInput = document.getElementById('algoInput').value.trim();
+  const boardW = parseInt(document.getElementById('boardW').value);
+  const boardH = parseInt(document.getElementById('boardH').value);
+  const colorsCount = parseInt(document.getElementById('colorsCount').value);
+  let seed = document.getElementById('seed').value.trim();
+
+  if (!seed) {
+    seed = 'demo-' + Date.now();
+  }
+
+  if (!algoInput) {
+    showError('Please provide algorithm code');
+    return;
+  }
+
+  try {
+    const result = await evaluateAlgorithm(algoInput, 1, boardW, boardH, colorsCount, seed);
+
+    if (result.lastBoard) {
+      drawBoard(result.lastBoard, boardW, boardH, colorsCount);
+    }
+
+    showError(`Demo completed! Score: ${result.best}, Turns: ${result.movesAccepted + result.movesInvalidOrTimeout}`);
+  } catch (e) {
+    showError(e.message);
+  }
+});
+
+document.getElementById('clearLeaderboard').addEventListener('click', () => {
+  if (confirm('Are you sure you want to clear the leaderboard? This cannot be undone.')) {
+    localStorage.removeItem(LEADERBOARD_KEY);
+    renderLeaderboard();
+  }
+});
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+renderLeaderboard();
+
+// Draw initial empty board
+const initialW = parseInt(document.getElementById('boardW').value);
+const initialH = parseInt(document.getElementById('boardH').value);
+const emptyCells = Array(initialH).fill(null).map(() => Array(initialW).fill(-1));
+drawBoard(emptyCells, initialW, initialH, 7);
+
+</script>
+
+</body>
+</html>
